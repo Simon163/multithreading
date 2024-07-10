@@ -129,5 +129,9 @@ int main() {
   // deinitializaton of condition varaiables and mutex lock
   deinit(plock, pcv_producer, pcv_consumer);
 
+  // close the handles of threads
+  uthread_close(phandle_producer);
+  uthread_close(phandle_consumer);
+
   return 0;
 }
