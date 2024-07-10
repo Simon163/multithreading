@@ -75,9 +75,9 @@ int32_t uthread_cond_signal(void* pcv);
 ```
 3. test results
 +	Linux：
-![Alt](demo/demo_simple.linux.jpg)
+![Alt](uthread/demo/demo_simple.linux.jpg)
 +	Windows:
-![Alt](demo/demo_simple.windows.jpg)
+![Alt](uthread/demo/demo_simple.windows.jpg)
 # producer-consumer problem
 
 In order to validate the usability of the uthread library to solve the real problem, we use it to solve the common producer-consumer problem by taking the example of producing and consuming items in a warehouse.
