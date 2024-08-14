@@ -109,13 +109,13 @@ int main() {
   // initializaton of condition varaiables and mutex lock
   init(&plock, &pcv_producer, &pcv_consumer);
   // create a thread for producer
-  ret = uthread_create(&phandle_producer, 0, handle_product, &items);
+  ret = uthread_create(&phandle_producer, NULL, handle_product, &items);
   if (ret != 0) {
     printf("Failed to create the producer thread\n");
     return -1;
   }
   // create a thread for consumer
-  ret = uthread_create(&phandle_consumer, 0, handle_consume, &items);
+  ret = uthread_create(&phandle_consumer, NULL, handle_consume, &items);
   if (ret != 0) {
     printf("Failed to create the consumer thread\n");
     return -1;

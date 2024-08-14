@@ -17,7 +17,8 @@ typedef struct {
   void*           arg;
 } thread_t;
 
-int32_t uthread_create(void** pphandle, void* pattr, void* pfunc, void* parg) {
+int32_t uthread_create(void** pphandle, const void* pattr, const void* pfunc,
+                       const void* parg) {
   if (NULL == pfunc) {
     LOGE("Error: thread function is not specified!");
     return UTHREAD_FAILURE;
@@ -54,7 +55,7 @@ int32_t uthread_create(void** pphandle, void* pattr, void* pfunc, void* parg) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_join(void* phandle) {
+int32_t uthread_join(const void* phandle) {
   if (NULL == phandle) {
     LOGE(
         "Error: thread handle is null, please create a thread properly first!");
@@ -71,7 +72,7 @@ int32_t uthread_join(void* phandle) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_close(void* phandle) {
+int32_t uthread_close(const void* phandle) {
   if (NULL == phandle) {
     LOGE(
         "Error: thread handle is null, please create a thread properly first!");
@@ -92,7 +93,7 @@ int32_t uthread_close(void* phandle) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_id_get(void* phandle, uint64_t* pthread_id) {
+int32_t uthread_id_get(const void* phandle, uint64_t* pthread_id) {
   if (NULL == phandle) {
     LOGE(
         "Error: thread handle is null, please create a thread properly first!");
@@ -143,7 +144,7 @@ int32_t uthread_mutex_init(void** pplock) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_mutex_deinit(void* plock) {
+int32_t uthread_mutex_deinit(const void* plock) {
   if (NULL == plock) {
     LOGE("Error: Mutex handle is null!");
     return UTHREAD_FAILURE;
@@ -163,7 +164,7 @@ int32_t uthread_mutex_deinit(void* plock) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_mutex_lock(void* plock) {
+int32_t uthread_mutex_lock(const void* plock) {
   if (NULL == plock) {
     LOGE("Error: Mutex handle is null!");
     return UTHREAD_FAILURE;
@@ -181,7 +182,7 @@ int32_t uthread_mutex_lock(void* plock) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_mutex_unlock(void* plock) {
+int32_t uthread_mutex_unlock(const void* plock) {
   if (NULL == plock) {
     LOGE("Error: Mutex handle is null!");
     return UTHREAD_FAILURE;
@@ -219,7 +220,7 @@ int32_t uthread_cond_init(void** ppcv) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_cond_deinit(void* pcv) {
+int32_t uthread_cond_deinit(const void* pcv) {
   if (NULL == pcv) {
     LOGE("Error: Condition variable handle is null!");
     return UTHREAD_FAILURE;
@@ -239,7 +240,7 @@ int32_t uthread_cond_deinit(void* pcv) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_cond_wait(void* pcv, void* lock) {
+int32_t uthread_cond_wait(const void* pcv, const void* lock) {
   if (NULL == pcv || NULL == lock) {
     LOGE("Error: Condition variable or lock handle is null!");
     return UTHREAD_FAILURE;
@@ -258,7 +259,7 @@ int32_t uthread_cond_wait(void* pcv, void* lock) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_cond_signal(void* pcv) {
+int32_t uthread_cond_signal(const void* pcv) {
   if (NULL == pcv) {
     LOGE("Error: Condition variable handle is null!");
     return UTHREAD_FAILURE;
@@ -275,3 +276,7 @@ int32_t uthread_cond_signal(void* pcv) {
 
   return UTHREAD_SUCCESS;
 }
+
+const uint8_t* uthreadVersion = UTHREAD_VERSION;
+
+const uint8_t* uthread_version() { return uthreadVersion; }

@@ -41,33 +41,34 @@ extern "C" {
 #endif
 
 // Create a new thread
-int32_t PUBLIC uthread_create(void** pphandle, void* pattr, void* pfunc,
-                              void* parg);
+PUBLIC int32_t uthread_create(void** pphandle, const void* pattr,
+                              const void* pfunc, const void* parg);
 // Wait for the thread to finish
-int32_t PUBLIC uthread_join(void* phandle);
+PUBLIC int32_t uthread_join(const void* phandle);
 // Exit the current thread
-int32_t PUBLIC uthread_close(void* phandle);
+PUBLIC int32_t uthread_close(const void* phandle);
 // Get the thread ID
-int32_t PUBLIC uthread_id_get(void* phandle, uint64_t* thread_id);
+PUBLIC int32_t uthread_id_get(const void* phandle, uint64_t* thread_id);
 // Sleep for specified time in microseconds
-int32_t PUBLIC uthread_sleep(uint64_t microseconds);
+PUBLIC int32_t uthread_sleep(uint64_t microseconds);
 // Initialize mutex
-int32_t PUBLIC uthread_mutex_init(void** pplock);
+PUBLIC int32_t uthread_mutex_init(void** pplock);
 // Deinitialize mutex
-int32_t PUBLIC uthread_mutex_deinit(void* plock);
+PUBLIC int32_t uthread_mutex_deinit(const void* plock);
 // Lock mutex
-int32_t PUBLIC uthread_mutex_lock(void* plock);
+PUBLIC int32_t uthread_mutex_lock(const void* plock);
 // Unlock mutex
-int32_t PUBLIC uthread_mutex_unlock(void* plock);
- // Initialize condition variable
-int32_t PUBLIC uthread_cond_init(void** ppcv);
+PUBLIC int32_t uthread_mutex_unlock(const void* plock);
+// Initialize condition variable
+PUBLIC int32_t uthread_cond_init(void** ppcv);
 // Deinitialize condition variable
-int32_t PUBLIC uthread_cond_deinit(void* pcv);
+PUBLIC int32_t uthread_cond_deinit(const void* pcv);
 // Wait for condition variable
-int32_t PUBLIC uthread_cond_wait(void* pcv, void* lock);
+PUBLIC int32_t uthread_cond_wait(const void* pcv, const void* lock);
 // Signal one waiting thread
-int32_t PUBLIC uthread_cond_signal(void* pcv);
-
+PUBLIC int32_t uthread_cond_signal(const void* pcv);
+// get the version number
+PUBLIC const uint8_t* uthread_version();
 #ifdef __cplusplus
 }
 #endif

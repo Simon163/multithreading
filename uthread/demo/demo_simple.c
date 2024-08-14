@@ -35,7 +35,12 @@ int main() {
   void*    phandle   = NULL;
   uint64_t thread_id = 0;
 
-  int param          = 123;
+  {
+    const uint8_t* version = uthread_version();
+    LOGI("Uthread version is: %s", version);
+  }
+
+  int param = 123;
   {
     ret = uthread_create(&phandle, NULL, (void*)ThreadFunc, (void*)&param);
     if (ret) {
