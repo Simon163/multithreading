@@ -45,6 +45,9 @@ int32_t uthread_cond_wait(void* pcv, void* lock);
 
 // Signal one waiting thread
 int32_t uthread_cond_signal(void* pcv);
+
+// get the version number
+const uint8_t* uthread_version();
 ```
 
 1. How to build
