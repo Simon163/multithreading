@@ -8,46 +8,50 @@ This repo is to provide an implementation of the cross-platform multithreading l
 So far now, the uthread supports the following interface functions:
 ```
 // Create a new thread
-int32_t uthread_create(void** pphandle, void* pattr, void* pfunc, void* parg);
+int32_t uthread_create(struct uthread_t** pphandle, const void* pattr,
+                              const void* pfunc, const void* parg);
 
 // Wait for the thread to finish
-int32_t uthread_join(void* phandle);
+int32_t uthread_join(const struct uthread_t* phandle);
 
 // Exit the current thread
-int32_t uthread_close(void* phandle);
+int32_t uthread_close(const struct uthread_t* phandle);
 
 // Get the thread ID
-int32_t uthread_id_get(void* phandle, uint64_t* thread_id);
+int32_t uthread_id_get(const struct uthread_t* phandle,
+                       uint64_t*               thread_id);
 
 // Sleep for specified time in microseconds
 int32_t uthread_sleep(uint64_t microseconds);
 
 // Initialize mutex
-int32_t uthread_mutex_init(void** pplock);
+int32_t uthread_mutex_init(struct uthread_mutex_t** ppmutex);
 
 // Deinitialize mutex
-int32_t uthread_mutex_deinit(void* plock);
+int32_t uthread_mutex_deinit(const struct uthread_mutex_t* pmutex);
 
 // Lock mutex
-int32_t uthread_mutex_lock(void* plock);
+int32_t uthread_mutex_lock(const struct uthread_mutex_t* pmutex);
 
 // Unlock mutex
-int32_t uthread_mutex_unlock(void* plock);
+int32_t uthread_mutex_unlock(const struct uthread_mutex_t* pmutex);
 
 // Initialize condition variable
-int32_t uthread_cond_init(void** ppcv);
+int32_t uthread_cond_init(struct uthread_cond_t** ppcond);
 
 // Deinitialize condition variable
-int32_t uthread_cond_deinit(void* pcv);
+int32_t uthread_cond_deinit(const struct uthread_cond_t* pcond);
 
 // Wait for condition variable
-int32_t uthread_cond_wait(void* pcv, void* lock);
+int32_t uthread_cond_wait(const struct uthread_cond_t*  pcond,
+                          const struct uthread_mutex_t* pmutex);
 
 // Signal one waiting thread
-int32_t uthread_cond_signal(void* pcv);
+int32_t uthread_cond_signal(const struct uthread_cond_t* pcond);
 
 // get the version number
 const uint8_t* uthread_version();
+
 ```
 
 1. How to build
