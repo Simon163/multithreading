@@ -31,9 +31,9 @@ void* ThreadFunc(void* pParam) {
 }
 
 int main() {
-  int      ret       = 0;
-  void*    phandle   = NULL;
-  uint64_t thread_id = 0;
+  int               ret       = 0;
+  struct uthread_t* phandle   = NULL;
+  uint64_t          thread_id = 0;
 
   {
     const uint8_t* version = uthread_version();

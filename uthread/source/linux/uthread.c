@@ -9,21 +9,30 @@
 
 typedef void* (*start_routine)(void*);
 
-typedef struct {
+struct uthread_t {
   pthread_t       handle;
   pthread_t       id;
   start_routine   func;
   pthread_attr_t* attr;
   void*           arg;
-} thread_t;
+};
 
-int32_t uthread_create(void** pphandle, const void* pattr, const void* pfunc,
-                       const void* parg) {
+struct uthread_mutex_t {
+  pthread_mutex_t lock;
+};
+
+struct uthread_cond_t {
+  pthread_cond_t cv;
+};
+
+int32_t uthread_create(struct uthread_t** pphandle, const void* pattr,
+                       const void* pfunc, const void* parg) {
   if (NULL == pfunc) {
     LOGE("Error: thread function is not specified!");
     return UTHREAD_FAILURE;
   }
-  thread_t* phandle = (thread_t*)malloc(sizeof(thread_t));
+  struct uthread_t* phandle =
+      (struct uthread_t*)malloc(sizeof(struct uthread_t));
   if (NULL == phandle) {
     LOGE("Error: failed to allocate memory!");
     return UTHREAD_FAILURE;
@@ -50,19 +59,20 @@ int32_t uthread_create(void** pphandle, const void* pattr, const void* pfunc,
     return UTHREAD_FAILURE;
   }
 
-  LOGI("The thread with ID=0x%lx is created", ((thread_t*)(*pphandle))->handle);
+  LOGI("The thread with ID=0x%lx is created",
+       ((struct uthread_t*)(*pphandle))->handle);
 
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_join(const void* phandle) {
+int32_t uthread_join(const struct uthread_t* phandle) {
   if (NULL == phandle) {
     LOGE(
         "Error: thread handle is null, please create a thread properly first!");
     return UTHREAD_FAILURE;
   }
 
-  int ret = pthread_join(((thread_t*)phandle)->handle, NULL);
+  int ret = pthread_join(((struct uthread_t*)phandle)->handle, NULL);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: failed to join the thread!");
@@ -72,7 +82,7 @@ int32_t uthread_join(const void* phandle) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_close(const void* phandle) {
+int32_t uthread_close(const struct uthread_t* phandle) {
   if (NULL == phandle) {
     LOGE(
         "Error: thread handle is null, please create a thread properly first!");
@@ -80,12 +90,12 @@ int32_t uthread_close(const void* phandle) {
   }
 
   // store the handle for the purpose of invoking exiting function
-  pthread_t handle = ((thread_t*)phandle)->handle;
-  LOGI("The thread with ID=0x%lx is about to exit", ((thread_t*)phandle)->id);
+  pthread_t handle = ((struct uthread_t*)phandle)->handle;
+  LOGI("The thread with ID=0x%lx is about to exit",
+       ((struct uthread_t*)phandle)->id);
 
   // dellocate memory
   free(phandle);
-  phandle = NULL;
 
   // invoke exiting function of the thread
   pthread_exit(&handle);
@@ -93,7 +103,7 @@ int32_t uthread_close(const void* phandle) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_id_get(const void* phandle, uint64_t* pthread_id) {
+int32_t uthread_id_get(const struct uthread_t* phandle, uint64_t* pthread_id) {
   if (NULL == phandle) {
     LOGE(
         "Error: thread handle is null, please create a thread properly first!");
@@ -104,7 +114,7 @@ int32_t uthread_id_get(const void* phandle, uint64_t* pthread_id) {
     return UTHREAD_FAILURE;
   }
 
-  *pthread_id = (uint64_t)((thread_t*)phandle)->handle;
+  *pthread_id = (uint64_t)((struct uthread_t*)phandle)->handle;
 
   return UTHREAD_SUCCESS;
 }
@@ -124,35 +134,40 @@ int32_t uthread_sleep(uint64_t microseconds) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_mutex_init(void** pplock) {
-  pthread_mutex_t* plock = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-  if (NULL == plock) {
+int32_t uthread_mutex_init(struct uthread_mutex_t** ppmutex) {
+  if (NULL == ppmutex) {
+    LOGE("Error: Mutex pointer is null!");
+    return UTHREAD_FAILURE;
+  }
+
+  LOGI("sizeof(uthread_mutex_t): %d", sizeof(struct uthread_mutex_t));
+  struct uthread_mutex_t* pmutex =
+      (struct uthread_mutex_t*)malloc(sizeof(struct uthread_mutex_t));
+  if (NULL == pmutex) {
     LOGE("Error: Failed to allocate memory for mutex!");
     return UTHREAD_FAILURE;
   }
 
-  int ret = pthread_mutex_init(plock, NULL);
+  int ret = pthread_mutex_init(&pmutex->lock, NULL);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to initialize mutex!");
-    free(plock);
-    plock = NULL;
+    free(pmutex);
+    pmutex = NULL;
     return UTHREAD_FAILURE;
   }
 
-  *pplock = (void*)plock;
+  *ppmutex = pmutex;
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_mutex_deinit(const void* plock) {
-  if (NULL == plock) {
-    LOGE("Error: Mutex handle is null!");
+int32_t uthread_mutex_deinit(const struct uthread_mutex_t* pmutex) {
+  if (NULL == pmutex) {
+    LOGE("Error: Mutex pointer is null!");
     return UTHREAD_FAILURE;
   }
 
-  pthread_mutex_t* pmutex = (pthread_mutex_t*)plock;
-
-  int ret                 = pthread_mutex_destroy(pmutex);
+  int ret = pthread_mutex_destroy(&pmutex->lock);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to destroy mutex!");
@@ -160,19 +175,16 @@ int32_t uthread_mutex_deinit(const void* plock) {
   }
 
   free(pmutex);
-  pmutex = NULL;
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_mutex_lock(const void* plock) {
-  if (NULL == plock) {
-    LOGE("Error: Mutex handle is null!");
+int32_t uthread_mutex_lock(const struct uthread_mutex_t* pmutex) {
+  if (NULL == pmutex) {
+    LOGE("Error: Mutex pointer is null!");
     return UTHREAD_FAILURE;
   }
 
-  pthread_mutex_t* pmutex = (pthread_mutex_t*)plock;
-
-  int ret                 = pthread_mutex_lock(pmutex);
+  int ret = pthread_mutex_lock(&pmutex->lock);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to lock mutex!");
@@ -182,15 +194,13 @@ int32_t uthread_mutex_lock(const void* plock) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_mutex_unlock(const void* plock) {
-  if (NULL == plock) {
-    LOGE("Error: Mutex handle is null!");
+int32_t uthread_mutex_unlock(const struct uthread_mutex_t* pmutex) {
+  if (NULL == pmutex) {
+    LOGE("Error: Mutex pointer is null!");
     return UTHREAD_FAILURE;
   }
 
-  pthread_mutex_t* pmutex = (pthread_mutex_t*)plock;
-
-  int ret                 = pthread_mutex_unlock(pmutex);
+  int ret = pthread_mutex_unlock(&pmutex->lock);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to unlock mutex!");
@@ -200,14 +210,19 @@ int32_t uthread_mutex_unlock(const void* plock) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_cond_init(void** ppcv) {
-  pthread_cond_t* pcv = (pthread_cond_t*)malloc(sizeof(pthread_cond_t));
+int32_t uthread_cond_init(struct uthread_cond_t** ppcond) {
+  if (NULL == ppcond) {
+    LOGE("Error: Condition variable pointer is null!");
+    return UTHREAD_FAILURE;
+  }
+  struct uthread_cond_t* pcv =
+      (struct uthread_cond_t*)malloc(sizeof(struct uthread_cond_t));
   if (NULL == pcv) {
     LOGE("Error: Failed to allocate memory for condition variable!");
     return UTHREAD_FAILURE;
   }
 
-  int ret = pthread_cond_init(pcv, NULL);
+  int ret = pthread_cond_init(&pcv->cv, NULL);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to initialize condition variable!");
@@ -216,19 +231,17 @@ int32_t uthread_cond_init(void** ppcv) {
     return UTHREAD_FAILURE;
   }
 
-  *ppcv = (void*)pcv;
+  *ppcond = pcv;
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_cond_deinit(const void* pcv) {
-  if (NULL == pcv) {
-    LOGE("Error: Condition variable handle is null!");
+int32_t uthread_cond_deinit(const struct uthread_cond_t* pcond) {
+  if (NULL == pcond) {
+    LOGE("Error: Condition variable pointer is null!");
     return UTHREAD_FAILURE;
   }
 
-  pthread_cond_t* pcond = (pthread_cond_t*)pcv;
-
-  int ret               = pthread_cond_destroy(pcond);
+  int ret = pthread_cond_destroy(&pcond->cv);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to destroy condition variable!");
@@ -236,20 +249,17 @@ int32_t uthread_cond_deinit(const void* pcv) {
   }
 
   free(pcond);
-  pcond = NULL;
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_cond_wait(const void* pcv, const void* lock) {
-  if (NULL == pcv || NULL == lock) {
+int32_t uthread_cond_wait(const struct uthread_cond_t*  pcond,
+                          const struct uthread_mutex_t* pmutex) {
+  if (NULL == pcond || NULL == pmutex) {
     LOGE("Error: Condition variable or lock handle is null!");
     return UTHREAD_FAILURE;
   }
 
-  pthread_cond_t*  pcond  = (pthread_cond_t*)pcv;
-  pthread_mutex_t* pmutex = (pthread_mutex_t*)lock;
-
-  int ret                 = pthread_cond_wait(pcond, pmutex);
+  int ret = pthread_cond_wait(&pcond->cv, &pmutex->lock);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to wait on condition variable!");
@@ -259,15 +269,13 @@ int32_t uthread_cond_wait(const void* pcv, const void* lock) {
   return UTHREAD_SUCCESS;
 }
 
-int32_t uthread_cond_signal(const void* pcv) {
-  if (NULL == pcv) {
-    LOGE("Error: Condition variable handle is null!");
+int32_t uthread_cond_signal(const struct uthread_cond_t* pcond) {
+  if (NULL == pcond) {
+    LOGE("Error: Condition variable pointer is null!");
     return UTHREAD_FAILURE;
   }
 
-  pthread_cond_t* pcond = (pthread_cond_t*)pcv;
-
-  int ret               = pthread_cond_signal(pcond);
+  int ret = pthread_cond_signal(&pcond->cv);
 
   if (RET_SUCCESS != ret) {
     LOGE("Error: Failed to signal condition variable!");

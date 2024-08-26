@@ -2,14 +2,16 @@
 #include <stdio.h>
 
 // mutex lock
-void *plock = NULL;
+struct uthread_mutex_t *plock;
 // condition variable for producer
-void *pcv_producer = NULL;
+struct uthread_cond_t *pcv_producer;
 // condition variable for consumer
-void *pcv_consumer = NULL;
+struct uthread_cond_t *pcv_consumer;
 
 // initialization
-static void init(void **pplock, void **ppcv_producer, void **ppcv_consumer) {
+static void init(struct uthread_mutex_t **pplock,
+                 struct uthread_cond_t **ppcv_producer,
+                 struct uthread_cond_t **ppcv_consumer) {
   // initialization of condition variable
   uthread_cond_init(ppcv_producer);
   uthread_cond_init(ppcv_consumer);
@@ -19,7 +21,9 @@ static void init(void **pplock, void **ppcv_producer, void **ppcv_consumer) {
 }
 
 // deinitialization
-static void deinit(void *plock, void *pcv_producer, void *pcv_consumer) {
+static void deinit(struct uthread_mutex_t *plock,
+                   struct uthread_cond_t *pcv_producer,
+                   struct uthread_cond_t *pcv_consumer) {
   // deinitialization of condition variable
   uthread_cond_deinit(pcv_producer);
   uthread_cond_deinit(pcv_consumer);
@@ -99,9 +103,9 @@ void *handle_consume(void *arg) {
 
 int main() {
   // handle of producer
-  void *phandle_producer = NULL;
+  struct uthread_t *phandle_producer = NULL;
   // handle of consumer
-  void *phandle_consumer = NULL;
+  struct uthread_t *phandle_consumer = NULL;
 
   int ret;
   int items = 3;
